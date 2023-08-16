@@ -6,11 +6,11 @@ from PIL import Image
 import os
 import time
 import tempfile
-from my_custom_component.my_custom_component import my_custom_audio_component
 import uuid
 from pydub import AudioSegment
 import requests
 import shutil
+import random
 
 
 def load_conversations_and_modifications():
@@ -35,6 +35,7 @@ def synthesize_speech(text, filename):
     return filename
 
 def speak_and_mixed(text):
+    print(f"Received text for conversion: {text}")
     if text.startswith("./audio_"):
         return [], [], 0
 
@@ -45,6 +46,7 @@ def speak_and_mixed(text):
     unique_id = uuid.uuid4()
     filename = f"0_{unique_id}.mp3"
     audio_path = synthesize_speech(clean_text, filename)
+    print(f"audio_path {audio_path}")
     audio_url = f"http://127.0.0.1:8001/audio/{os.path.basename(audio_path)}"
 
     # 음성 파일의 길이를 직접 여기서 계산합니다.
@@ -52,8 +54,8 @@ def speak_and_mixed(text):
     audio_length = len(audio) / 1000
 
     # 음성 파일을 버퍼 디렉토리로 복사합니다.
-    buffer_path = os.path.join('./audio_buffer', filename)
-    shutil.copyfile(audio_path, buffer_path)
+    # buffer_path = os.path.join('./audio', filename)
+    # shutil.copyfile(audio_path, buffer_path)
 
     print(f"Generated audio for conversation: '{clean_text}', Audio URL: '{audio_url}', Audio Length: {audio_length}")
     
@@ -62,18 +64,15 @@ def speak_and_mixed(text):
 
     return audio_urls, text_chunks, audio_length
 
-def find_next_bot_message(speakers_and_messages, selected_conversation):
-    index_of_selected_conversation = speakers_and_messages.index(selected_conversation)
-    if index_of_selected_conversation < len(speakers_and_messages) - 1:
-        return speakers_and_messages[index_of_selected_conversation + 1]['message']
-    else:
-        return None
-
 def prepare_speakers_and_messages(selected_chapter, chapter_conversations, modifications_dict):
     speakers_and_messages = [{'chapter': selected_chapter, 'speaker': message['speaker'], 'message': message['message']} 
                          for message in chapter_conversations 
                          if message['speaker'] == 'user']
     speakers_and_messages.insert(0, {'chapter': selected_chapter, 'speaker': "user", 'message': ""})
+
+    for msg in speakers_and_messages:
+        if msg['speaker'] != 'user':
+            print("에러: bot의 메시지가 포함되었습니다:", msg)
 
     if selected_chapter in modifications_dict:
         for add in modifications_dict[selected_chapter]['add']:
@@ -85,7 +84,7 @@ def prepare_speakers_and_messages(selected_chapter, chapter_conversations, modif
     return speakers_and_messages
 
 def handle_chapter_and_conversation_selection(knowledge_base):
-    chapters = [data['chapter'] for data in knowledge_base]
+    chapters = [data['chapter_title'] for data in knowledge_base]
 
     if "selected_chapter" not in st.session_state or st.session_state.selected_chapter not in chapters:
         st.session_state.selected_chapter = chapters[0]
@@ -104,7 +103,7 @@ def handle_chapter_and_conversation_selection(knowledge_base):
                 del st.session_state.chat_history
                 st.experimental_rerun()
 
-    chapter_conversations = next((data['conversations'] for data in knowledge_base if data['chapter'] == st.session_state.selected_chapter), None)
+    chapter_conversations = next((data['conversations'] for data in knowledge_base if data['chapter_title'] == st.session_state.selected_chapter), None)
 
     speakers_and_messages = prepare_speakers_and_messages(st.session_state.selected_chapter, chapter_conversations, modifications_dict)
 
@@ -130,37 +129,11 @@ def handle_chapter_and_conversation_selection(knowledge_base):
 
     if st.session_state.selected_chapter and st.session_state.selected_message and st.session_state.selected_message != "":
         chapter_name = st.session_state.selected_chapter
-        chapter_data = next(chap_data for chap_data in knowledge_base if chap_data["chapter"] == chapter_name)
+        chapter_data = next(chap_data for chap_data in knowledge_base if chap_data["chapter_title"] == chapter_name)
         speakers_and_messages = chapter_data["conversations"]
 
         return chapter_name, chapter_data, speakers_and_messages
     return None, None, None
-
-def pre_buffer_audio_files(speakers_and_messages):
-    print(f"speakers_and_messages {speakers_and_messages}")
-    buffer_dir = "./audio_buffer"
-    
-    print(f"Creating buffer directory: {buffer_dir}")
-    os.makedirs(buffer_dir, exist_ok=True)
-    buffer_dir = os.path.abspath("./audio_buffer")
-    print(buffer_dir)
-
-    # 모든 사용자 메시지에 대한 음성 파일을 미리 생성합니다.
-    for sm in speakers_and_messages:
-        if sm['message']:
-            text = sm['message']
-            unique_id = uuid.uuid4()
-            filename = f"{unique_id}.mp3"
-            audio_path = synthesize_speech(text, filename)
-            os.rename(audio_path, os.path.join(buffer_dir, filename))
-
-def get_pre_buffered_audio_url(message):
-    buffer_dir = "./audio_buffer"
-    for filename in os.listdir(buffer_dir):
-        if message in filename:
-            return f"http://127.0.0.1:8001/audio_buffer/{filename}"
-
-    return None
 
 css_style = """
 <style>
@@ -202,34 +175,30 @@ def display_chat_history(chapter_data):
         st.markdown("<hr>", unsafe_allow_html=True)
         for i, msg in enumerate(conv["conversation"]):
             icon = "👩‍🦰" if msg['speaker'] == 'user' else "👩"
-            message = msg['message'].replace('\n', '  \n')
-            styled_message = f'<div class="styled-message">{icon} {message}</div>'
+            messages = [msg['message']] if isinstance(msg['message'], str) else msg['message']
+            for selected_message in messages: # 여러 개의 메시지가 있는 경우 모두 처리
+                styled_message = f'<div class="styled-message">{icon} {selected_message}</div>'
 
-            if i == 0 and msg['speaker'] == 'user' and idx > 0:
-                styled_message += '<div class="question-dialogue-gap"></div>'  # Add a gap after the question
+                if conv["is_new"]:
+                    audio_urls, _, audio_length = speak_and_mixed(selected_message)
+                    for audio_url in audio_urls:
+                        audio_tag = f'<audio autoplay src="{audio_url}" style="display: none;"></audio>'
+                        st.markdown(audio_tag, unsafe_allow_html=True)
+                        time.sleep(audio_length)
 
-            if conv["is_new"]:
-                audio_urls, text_chunks, audio_length = speak_and_mixed(message)
-                for audio_url in audio_urls:
-                    audio_tag = f'<audio autoplay src="{audio_url}" style="display: none;"></audio>'
-                    st.markdown(audio_tag, unsafe_allow_html=True)
-                    time.sleep(audio_length)
+                st.markdown(styled_message, unsafe_allow_html=True)
 
-            st.markdown(styled_message, unsafe_allow_html=True)
-
-            # Deleting audio files
-            if conv["is_new"]:
-                for audio_url in audio_urls:
-                    filename = audio_url.split('/')[-1]
-                    requests.post(f"http://127.0.0.1:8001/delete/audio/{filename}")
+        # Deleting audio files
+        if conv["is_new"] and msg['speaker'] == 'bot':
+            for audio_url in audio_urls:
+                filename = audio_url.split('/')[-1]
+                # requests.post(f"http://127.0.0.1:8001/delete/audio/{filename}")
 
         # Once a conversation has been displayed, it's not new anymore
         if conv["is_new"]:
             st.session_state.chat_history[idx]["is_new"] = False
 
     st.markdown(css_style, unsafe_allow_html=True)
-
-
 
 def main():
     st.title("English Again Conversations")
