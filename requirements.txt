@@ -1,0 +1,14 @@
+streamlit
+gtts
+re
+json
+Pillow
+os
+time
+tempfile
+uuid
+pydub
+requests
+shutil
+flask
+flask-cors
