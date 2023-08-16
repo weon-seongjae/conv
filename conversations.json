@@ -1,0 +1,362 @@
+[   {
+        "chapter": "만나서 안부 묻기",
+        "conversations": [
+            {
+                "speaker": "user",
+                "message": "Hi!"
+            },
+            {
+                "speaker": "bot",
+                "message": "Hello!"
+            },
+            {
+                "speaker": "user",
+                "message": "How are you?"
+            },
+            {
+                "speaker": "bot",
+                "message": "I’m fine. Thanks. How are you doing?"
+            },
+            {
+                "speaker": "user",
+                "message": "Great."
+            }
+        ]
+    },
+    {
+        "chapter": "처음 만나서 소개하기",
+        "conversations": [
+            {
+                "speaker": "user",
+                "message": "Judy, this is Tom Smith. He’s a friend of mine."
+            },
+            {
+                "speaker": "bot",
+                "message": "Hello, Tom. I’m Judy Wilson."
+            },
+            {
+                "speaker": "user",
+                "message": "Nice to meet you, Judy."
+            },
+            {
+                "speaker": "bot",
+                "message": "Nice to meet you, too, Tom."
+            }
+        ]
+    },
+    {
+        "chapter": "자기 소개한 후 헤어질 때 인사",
+        "conversations": [
+            {
+                "speaker": "user",
+                "message": "Hi, Tom!"
+            },
+            {
+                "speaker": "bot",
+                "message": "Hi, Jen!"
+            },
+            {
+                "speaker": "user",
+                "message": "I’m going to the post office."
+            },
+            {
+                "speaker": "bot",
+                "message": "Where are you going?"
+            },
+            {
+                "speaker": "user",
+                "message": "I see. Are you coming to Ken’s birthday party, later?"
+            },
+            {
+                "speaker": "bot",
+                "message": "Sure."
+            },
+            {
+                "speaker": "user",
+                "message": "OK. I’ll see you later, then."
+            },
+            {
+                "speaker": "bot",
+                "message": "See you."
+            }
+        ]
+    },
+    {
+        "chapter": "축하 인사",
+        "conversations": [
+            {
+                "speaker": "user",
+                "message": "Happy birthday!"
+            },
+            {
+                "speaker": "bot",
+                "message": "Thank you."
+            },
+            {
+                "speaker": "user",
+                "message": "Merry Christmas!"
+            },
+            {
+                "speaker": "bot",
+                "message": "The same to you."
+            },
+            {
+                "speaker": "user",
+                "message": "Happy New Year!"
+            },
+            {
+                "speaker": "bot",
+                "message": "The same to you."
+            },
+            {
+                "speaker": "user",
+                "message": "Congratulations!"
+            },
+            {
+                "speaker": "bot",
+                "message": "Thank you."
+            }
+        ]
+    },
+    {
+        "chapter": "감사, 겸손, 사과, 용서 인사",
+        "conversations": [
+            {
+                "speaker": "user",
+                "message": "I’m so sorry for being late."
+            },
+            {
+                "speaker": "bot",
+                "message": "It’s all right. Not everybody has come yet."
+            },
+            {
+                "speaker": "user",
+                "message": "By the way, congratulations! Here you are."
+            },
+            {
+                "speaker": "bot",
+                "message": "Thank you so much."
+            },
+            {
+                "speaker": "user",
+                "message": "You’re welcome."
+            },
+            {
+                "speaker": "bot",
+                "message": "It’s my favorite."
+            }
+        ]
+    },
+    {
+        "chapter": "이름을 물을 때",
+        "conversations": [
+            {
+                "speaker": "user",
+                "message": "May I have your name, please?"
+            },
+            {
+                "speaker": "bot",
+                "message": "I'm Jerry Yang."
+            },
+            {
+                "speaker": "user",
+                "message": "How do you spell your last name?"
+            },
+            {
+                "speaker": "bot",
+                "message": "It’s Y, A, N, G."
+            }
+        ]
+    },
+    {
+        "chapter": "출신지, 국적을 묻고 답할 때",
+        "conversations": [
+            {
+                "speaker": "user",
+                "message": "Hello, I’m Peter. Nice to meet you."
+            },
+            {
+                "speaker": "bot",
+                "message": "Hello, Peter. I’m Mayumi. Glad to meet you."
+            },
+            {
+                "speaker": "user",
+                "message": "I’m sorry. I didn’t catch  your name."
+            },
+            {
+                "speaker": "bot",
+                "message": "Ma-yu-mi."
+            },
+            {
+                "speaker": "user",
+                "message": "All right. Mayumi, where are you from?"
+            },
+            {
+                "speaker": "bot",
+                "message": "I’m from Japan. What about you?"
+            },
+            {
+                "speaker": "user",
+                "message": "I’m from England."
+            }
+        ]
+    },
+    {
+        "chapter": "직업을 묻고 답할 때",
+        "conversations": [
+            {
+                "speaker": "user",
+                "message": "What do you do, John?"
+            },
+            {
+                "speaker": "bot",
+                "message": "I’m a chef at the King Hotel."
+            },
+            {
+                "speaker": "user",
+                "message": "That sounds nice. I'm a computer programmer."
+            },
+            {
+                "speaker": "bot",
+                "message": "Where do you work?"
+            },
+            {
+                "speaker": "user",
+                "message": "I work at Microsoft."
+            }
+        ]
+    },
+    {
+        "chapter": "취미를 묻고 답할 때",
+        "conversations": [
+            {
+                "speaker": "user",
+                "message": "Do you like swimming?"
+            },
+            {
+                "speaker": "bot",
+                "message": "No, I don’t. I can’t swim."
+            },
+            {
+                "speaker": "user",
+                "message": "What’s your hobby, Jane?"
+            },
+            {
+                "speaker": "bot",
+                "message": "I like dancing."
+            },
+            {
+                "speaker": "user",
+                "message": "Oh, really? I like dancing, too."
+            },
+            {
+                "speaker": "bot",
+                "message": "Great! Would you like to go dancing tonight?"
+            }
+        ]
+    },
+    {
+        "chapter": "전화 대화 1",
+        "conversations": [
+            {
+                "speaker": "user",
+                "message": "Hello."
+            },
+            {
+                "speaker": "bot",
+                "message": "Hello. Is Min-ho there?"
+            },
+            {
+                "speaker": "user",
+                "message": "Speaking."
+            },
+            {
+                "speaker": "bot",
+                "message": "Hi, Min-ho. This is Jane."
+            }
+        ]
+    },
+    {
+        "chapter": "전화 대화 2",
+        "conversations": [
+            {
+                "speaker": "user",
+                "message": "Good afternoon. ABC company. May I help you?"
+            },
+            {
+                "speaker": "bot",
+                "message": "Yes, can I talk to Ms. Green, please?"
+            },
+            {
+                "speaker": "user",
+                "message": "May I have your name, please?"
+            },
+            {
+                "speaker": "bot",
+                "message": "This is Tom Smith."
+            },
+            {
+                "speaker": "user",
+                "message": "Hold on, please."
+            }
+        ]
+    },
+    {
+        "chapter": "전화 대화 3",
+        "conversations": [
+            {
+                "speaker": "user",
+                "message": "Hello."
+            },
+            {
+                "speaker": "bot",
+                "message": "Hello. Can I speak to Mary, please?"
+            },
+            {
+                "speaker": "user",
+                "message": "I’m sorry. She is not in now. May I take a message?"
+            },
+            {
+                "speaker": "bot",
+                "message": "Yes, please. This is Carol Smith. I want her to call me back."
+            },
+            {
+                "speaker": "user",
+                "message": "I’ll give her your message."
+            },
+            {
+                "speaker": "bot",
+                "message": "Thanks a lot. Goodbye."
+            }
+        ]
+    },
+    {
+        "chapter": "전화 대화 4",
+        "conversations": [
+            {
+                "speaker": "user",
+                "message": "Hello."
+            },
+            {
+                "speaker": "bot",
+                "message": "Hi, Jane. This is Bob."
+            },
+            {
+                "speaker": "user",
+                "message": "Hello? What number did you call?"
+            },
+            {
+                "speaker": "bot",
+                "message": "Oh... Isn’t this 419-7023?"
+            },
+            {
+                "speaker": "user",
+                "message": "No, it isn’t."
+            },
+            {
+                "speaker": "bot",
+                "message": "I’m sorry for the mistake."
+            }
+        ]
+    }
+]
