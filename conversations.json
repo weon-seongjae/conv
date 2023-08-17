@@ -29,6 +29,10 @@
                     "I'm okay. How are you today?",
                     "Feeling good! How's your day going?"
                 ]
+            },
+            {
+                "speaker": "user",
+                "message": ["Great."]
             }
         ]
     },
@@ -311,6 +315,10 @@
                     "I was born in Kyoto.",
                     "My home is in Osaka!"
                 ]
+            },
+            {
+                "speaker": "user",
+                "message": ["I’m from England."]
             }
         ]
     },
@@ -344,6 +352,10 @@
                     "That's cool! Do you make games?",
                     "That sounds fun! Do you like it?"
                 ]
+            },
+            {
+                "speaker": "user",
+                "message": ["I work at Microsoft."]
             }
         ]
     },
@@ -457,6 +469,10 @@
                     "Tom Smith here.",
                     "You're speaking with Tom Smith."
                 ]
+            },
+            {
+                "speaker": "user",
+                "message": ["Hold on, please."]
             }
         ]
     },
