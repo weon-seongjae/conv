@@ -51,7 +51,9 @@ def speak_and_mixed(text):
     unique_id = uuid.uuid4()
     filename = f"0_{unique_id}.mp3"
     audio_path = synthesize_speech(clean_text, filename)
-    audio_url = f"http://127.0.0.1:8001/audio/{os.path.basename(audio_path)}"
+    # audio_url = f"http://127.0.0.1:8001/audio/{os.path.basename(audio_path)}"
+    audio_url = f"https://a177-1-222-123-226.ngrok-free.app/audio/{os.path.basename(audio_path)}"
+
 
     # 음성 파일의 길이를 직접 여기서 계산합니다.
     audio = AudioSegment.from_mp3(audio_path)
@@ -169,7 +171,7 @@ def handle_chapter_and_conversation_selection(knowledge_base):
 css_style = """
 <style>
 .styled-message {
-    background-color: white;
+    # background-color: white;
     border-radius: 0px;
     padding: 0;
     margin: 5px;  /* Adjust margin to control the gap */
@@ -261,7 +263,7 @@ def display_chat_history(chapter_data):
             if conv["is_new"]:
                 audio_urls, text_chunks, audio_length = speak_and_mixed(message)
                 for audio_url in audio_urls:
-                    audio_tag = f'<audio preload = "metadata" autoplay src="{audio_url}" style="display: none;"></audio>'
+                    audio_tag = f'<audio autoplay src="{audio_url}" style="display: none;"></audio>'
                     st.markdown(audio_tag, unsafe_allow_html=True)
                     time.sleep(audio_length)
 

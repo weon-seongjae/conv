@@ -3,8 +3,9 @@ from flask_cors import CORS
 import os
 import time
 
-app = Flask(__name__, static_url_path='/static', static_folder='.')
+app = Flask(__name__)
 CORS(app)
+
 
 audio_directory = './audio'
 
