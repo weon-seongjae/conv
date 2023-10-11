@@ -1,0 +1,22 @@
+[
+    {
+        "chapter" : "만나서 안부 묻기", 
+            "add": [{"speaker": "bot", "message": "I’m fine. Thanks. How are you doing?"}],
+            "remove": [{"speaker": "user", "message": "Great."}]
+    },
+    { 
+        "chapter" : "출신지, 국적을 묻고 답할 때",
+            "add": [{"speaker": "bot", "message": "I’m from Japan. What about you?"}],
+            "remove": [{"speaker": "user", "message": "I’m from England."}]
+    },
+    {
+        "chapter" : "직업을 묻고 답할 때",
+            "add": [{"speaker": "bot", "message": "I’m a chef at the King Hotel."},{"speaker": "bot", "message": "Where do you work?"}],
+            "remove": [{"speaker": "user", "message": "That sounds nice. I'm a computer programmer."},{"speaker": "user", "message": "I work at Microsoft."}]
+    },
+    {
+        "chapter" : "전화 대화 2",
+            "add" : [{"speaker": "user", "message": "This is Tom Smith."}],
+            "remove": [{"speaker": "user", "message": "Hold on, please."}]
+    }
+]
