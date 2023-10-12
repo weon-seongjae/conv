@@ -15,8 +15,10 @@ import tempfile
 from google.oauth2 import service_account
 
 
-credentials_dict = st.secrets['MY_SECRET']
+credentials_dict = st.secrets['GCP_CREDENTIALS']
+print(credentials_dict)
 credentials = service_account.Credentials.from_service_account_info(credentials_dict)
+print(credentials)
 client = texttospeech.TextToSpeechClient(credentials=credentials)
 
 @st.cache_data
