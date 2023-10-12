@@ -14,7 +14,7 @@ from google.cloud import texttospeech_v1 as texttospeech
 import tempfile
 
 
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'env/sylvan-triumph-213406-546175b68dc9.json'
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = st.secrets['MY_SECRET']
 
 @st.cache_data
 def load_conversations_and_modifications():
