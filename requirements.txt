@@ -5,3 +5,4 @@ uuid
 pydub
 requests
 google-cloud-texttospeech
+imageio-ffmpeg
