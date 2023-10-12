@@ -1,6 +1,8 @@
 streamlit
 gtts
 Pillow
+uuid
 pydub
-flask
-flask-cors
+requests
+google-cloud-texttospeech
+imageio-ffmpeg
