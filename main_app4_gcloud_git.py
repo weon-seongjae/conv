@@ -12,10 +12,12 @@ import random
 from pydub.utils import mediainfo
 from google.cloud import texttospeech_v1 as texttospeech
 import tempfile
+from google.oauth2 import service_account
 
 
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = json.dumps(dict(st.secrets['MY_SECRET']))
-
+credentials_dict = st.secrets['MY_SECRET']
+credentials = service_account.Credentials.from_service_account_info(credentials_dict)
+client = texttospeech.TextToSpeechClient(credentials=credentials)
 
 @st.cache_data
 def load_conversations_and_modifications():
