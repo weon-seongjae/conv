@@ -1,7 +1,5 @@
 import streamlit as st
 import re
-import json
-from PIL import Image
 import os
 import time
 import tempfile
@@ -13,12 +11,12 @@ from pydub.utils import mediainfo
 from google.cloud import texttospeech_v1 as texttospeech
 import tempfile
 from google.oauth2 import service_account
+import json
 
 
-credentials_dict = st.secrets['GCP_CREDENTIALS']
-print(credentials_dict)
+credentials_str = os.environ['GCP_CREDENTIALS']
+credentials_dict = json.loads(credentials_str)
 credentials = service_account.Credentials.from_service_account_info(credentials_dict)
-print(credentials)
 client = texttospeech.TextToSpeechClient(credentials=credentials)
 
 @st.cache_data
