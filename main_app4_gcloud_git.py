@@ -22,8 +22,8 @@ client = texttospeech.TextToSpeechClient(credentials=credentials)
 @st.cache_data
 def load_conversations_and_modifications():
     # Directly load from raw GitHub URLs
-    conversations_url = "https://raw.githubusercontent.com/weon-seongjae/conv/main/conversations.json"
-    modifications_url = "https://raw.githubusercontent.com/weon-seongjae/conv/main/chapter_modification.json"
+    conversations_url = "https://raw.githubusercontent.com/weon-seongjae/conv/master/conversations.json"
+    modifications_url = "https://raw.githubusercontent.com/weon-seongjae/conv/master/chapter_modification.json"
 
     conversations_response = requests.get(conversations_url)
     conversations_data = conversations_response.json()
