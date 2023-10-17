@@ -12,11 +12,19 @@ from google.cloud import texttospeech_v1 as texttospeech
 import tempfile
 from google.oauth2 import service_account
 import json
+import base64
+import io
 
 
-credentials_str = os.environ['GCP_CREDENTIALS']
-credentials_dict = json.loads(credentials_str)
-credentials = service_account.Credentials.from_service_account_info(credentials_dict)
+# credentials_str = os.environ['GCP_CREDENTIALS']
+# credentials_dict = json.loads(credentials_str)
+# credentials = service_account.Credentials.from_service_account_info(credentials_dict)
+# client = texttospeech.TextToSpeechClient(credentials=credentials)
+
+key_path = "GCP_CREDENTIALS.json"
+
+credentials = service_account.Credentials.from_service_account_file(key_path)
+
 client = texttospeech.TextToSpeechClient(credentials=credentials)
 
 @st.cache_data
@@ -45,7 +53,7 @@ knowledge_base, modifications_dict = load_conversations_and_modifications()
 temp_files = []
 
 def synthesize_speech(text, filename, voice_type):
-    client = texttospeech.TextToSpeechClient()
+    client = texttospeech.TextToSpeechClient(credentials=credentials)
 
     input_text = texttospeech.SynthesisInput(text=text)
 
@@ -83,20 +91,14 @@ def synthesize_speech(text, filename, voice_type):
 
 def speak_and_mixed(text, is_question=False):
     clean_text = re.sub('<[^<]+?>', '', text)
-    unique_id = uuid.uuid4()
-    filename = f"question_{unique_id}.mp3" if is_question else f"answer_{unique_id}.mp3"
-    audio_path = synthesize_speech(clean_text, filename, "male" if is_question else "female")
-    print(f"Audio path from speak_and_mixed: {audio_path}")
-    if os.path.exists(audio_path):
-        print(f"File {audio_path} exists!")  # 파일이 실제로 존재하는지 확인
-    else:
-        print(f"File {audio_path} does not exist!")
-    temp_files.append(audio_path)
-
-    audio = AudioSegment.from_mp3(audio_path)
+    response = synthesize_speech(clean_text, "male" if is_question else "female")
+    
+    audio = AudioSegment.from_file(io.BytesIO(response.audio_content), format='mp3')
     audio_length = len(audio) / 1000
 
-    return audio_path, clean_text, audio_length
+    base64_audio = base64.b64encode(response.audio_content).decode('utf-8')
+
+    return base64_audio, clean_text, audio_length
 
 
 def prepare_speakers_and_messages(selected_chapter, chapter_conversations, modifications_dict):
@@ -236,9 +238,11 @@ def display_chat_history(chapter_data):
         question_message = conv["conversation"][0]['message'][0]
 
         if conv["is_new"]:
-            question_audio_path, _, question_audio_length = speak_and_mixed(question_message, is_question=True)
+            question_base64_audio, _, question_audio_length = speak_and_mixed(question_message, is_question=True)
 
-            audio_tag = f'<audio autoplay src="{question_audio_path}" style="display: none;"></audio>'
+            data_url = f"data:audio/mp3;base64,{question_base64_audio}"
+
+            audio_tag = f'<audio autoplay src="{data_url}" style="display: none;"></audio>'
             st.markdown(audio_tag, unsafe_allow_html=True)
             time.sleep(question_audio_length)
 
@@ -255,8 +259,9 @@ def display_chat_history(chapter_data):
             final_html += styled_message # Append each message to final_html
 
             if i == 1:
-                response_audio_path, _, response_audio_length = speak_and_mixed(message, is_question=False)
-                audio_tag = f'<audio autoplay src="{response_audio_path}" style="display: none;"></audio>'
+                response_base64_audio, _, response_audio_length = speak_and_mixed(message, is_question=False)
+                data_url = f"data:audio/mp3;base64,{response_base64_audio}"
+                audio_tag = f'<audio autoplay src="{data_url}" style="display: none;"></audio>'
                 st.markdown(audio_tag, unsafe_allow_html=True)
                 time.sleep(response_audio_length)
 
@@ -296,5 +301,5 @@ def safe_delete(file):
 
 if __name__ == "__main__":
     main()
-    for file in temp_files:
-        safe_delete(file)
+    # for file in temp_files:
+    #     safe_delete(file)
