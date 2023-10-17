@@ -17,7 +17,7 @@ import io
 
 
 # Streamlit secrets로부터 인증 정보를 가져옵니다.
-credentials_dict = st.secrets
+credentials_dict = st.secrets["GCP_CREDENTIALS"]
 
 # credentials_dict를 사용하여 Google 서비스 계정 인증 정보를 얻습니다.
 credentials = service_account.Credentials.from_service_account_info(credentials_dict)
