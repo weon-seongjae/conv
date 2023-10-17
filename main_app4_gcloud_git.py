@@ -77,6 +77,9 @@ def synthesize_speech(text, filename, voice_type="male"):
         audio_config=audio_config
     )
 
+    print(type(response))  # <class 'google.cloud.texttospeech_v1.types.SynthesizeSpeechResponse'>
+    print(response)
+
     # 임시 파일로 음성 데이터 저장
     with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as temp_file:
         temp_file.write(response.audio_content)
