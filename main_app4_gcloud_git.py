@@ -16,20 +16,15 @@ import base64
 import io
 
 
-# Streamlit secrets로부터 인증 정보를 가져옵니다.
-credentials_dict = st.secrets["GCP_CREDENTIALS"]
+# 환경 변수에서 인증 정보를 가져옵니다.
+credentials_str = os.environ['GCP_CREDENTIALS']
+credentials_dict = json.loads(credentials_str)
 
 # credentials_dict를 사용하여 Google 서비스 계정 인증 정보를 얻습니다.
 credentials = service_account.Credentials.from_service_account_info(credentials_dict)
 
 # Text-to-Speech 클라이언트를 초기화합니다.
 client = texttospeech.TextToSpeechClient(credentials=credentials)
-
-# key_path = "GCP_CREDENTIALS.json"
-
-# credentials = service_account.Credentials.from_service_account_file(key_path)
-
-# client = texttospeech.TextToSpeechClient(credentials=credentials)
 
 @st.cache_data
 def load_conversations_and_modifications():
