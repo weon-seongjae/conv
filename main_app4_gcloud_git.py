@@ -98,6 +98,8 @@ def speak_and_mixed(text, is_question=False):
         audio_content = response.audio_content
     else:
         print(f"Unexpected type: {type(response)}")
+
+    decoded_audio_content = base64.b64decode(audio_content)
     
     audio = AudioSegment.from_file(io.BytesIO(response.audio_content), format='mp3')
     audio_length = len(audio) / 1000
