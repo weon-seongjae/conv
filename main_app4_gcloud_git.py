@@ -51,7 +51,7 @@ knowledge_base, modifications_dict = load_conversations_and_modifications()
 
 temp_files = []
 
-def synthesize_speech(text, filename, voice_type):
+def synthesize_speech(text, filename, voice_type="male"):
     client = texttospeech.TextToSpeechClient(credentials=credentials)
 
     input_text = texttospeech.SynthesisInput(text=text)
@@ -80,11 +80,11 @@ def synthesize_speech(text, filename, voice_type):
     # 임시 파일로 음성 데이터 저장
     with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as temp_file:
         temp_file.write(response.audio_content)
-        print(f"Created temp file at: {temp_file.name}")  # 경로 출력
-        if os.path.exists(temp_file.name):
-            print(f"File {temp_file.name} exists!")  # 파일이 실제로 존재하는지 확인
-        else:
-            print(f"File {temp_file.name} does not exist!")
+        # print(f"Created temp file at: {temp_file.name}")  # 경로 출력
+        # if os.path.exists(temp_file.name):
+        #     print(f"File {temp_file.name} exists!")  # 파일이 실제로 존재하는지 확인
+        # else:
+        #     print(f"File {temp_file.name} does not exist!")
         temp_files.append(temp_file.name)  # temp_files에 임시 파일 경로 추가
         return temp_file.name
 
