@@ -95,16 +95,16 @@ def speak_and_mixed(text, is_question=False):
     clean_text = re.sub('<[^<]+?>', '', text)
     response = synthesize_speech(clean_text, "male" if is_question else "female")
     if isinstance(response, texttospeech.SynthesizeSpeechResponse):
-        audio_content = response.audio_content
+        audio_content = response.audio_content  # audio_content 변수 정의
     else:
         print(f"Unexpected type: {type(response)}")
-
-    decoded_audio_content = base64.b64decode(audio_content)
+        return None, clean_text, 0  # 오류 시 None 반환
     
-    audio = AudioSegment.from_file(io.BytesIO(response.audio_content), format='mp3')
+    decoded_audio_content = base64.b64decode(audio_content)  # 이 줄은 필요하지 않을 수 있습니다.
+    audio = AudioSegment.from_file(io.BytesIO(audio_content), format='mp3')  # audio_content 변수 사용
     audio_length = len(audio) / 1000
 
-    base64_audio = base64.b64encode(response.audio_content).decode('utf-8')
+    base64_audio = base64.b64encode(audio_content).decode('utf-8')
     print(type(response))  # Check the type of response
     print(response)
 
