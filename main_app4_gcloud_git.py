@@ -16,16 +16,16 @@ import base64
 import io
 
 
-# credentials_str = os.environ['GCP_CREDENTIALS']
-# credentials_dict = json.loads(credentials_str)
-# credentials = service_account.Credentials.from_service_account_info(credentials_dict)
-# client = texttospeech.TextToSpeechClient(credentials=credentials)
-
-key_path = "GCP_CREDENTIALS.json"
-
-credentials = service_account.Credentials.from_service_account_file(key_path)
-
+credentials_str = os.environ['GCP_CREDENTIALS']
+credentials_dict = json.loads(credentials_str)
+credentials = service_account.Credentials.from_service_account_info(credentials_dict)
 client = texttospeech.TextToSpeechClient(credentials=credentials)
+
+# key_path = "GCP_CREDENTIALS.json"
+
+# credentials = service_account.Credentials.from_service_account_file(key_path)
+
+# client = texttospeech.TextToSpeechClient(credentials=credentials)
 
 @st.cache_data
 def load_conversations_and_modifications():
