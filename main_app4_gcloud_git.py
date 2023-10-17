@@ -94,11 +94,17 @@ def synthesize_speech(text, filename, voice_type="male"):
 def speak_and_mixed(text, is_question=False):
     clean_text = re.sub('<[^<]+?>', '', text)
     response = synthesize_speech(clean_text, "male" if is_question else "female")
+    if isinstance(response, texttospeech.SynthesizeSpeechResponse):
+        audio_content = response.audio_content
+    else:
+        print(f"Unexpected type: {type(response)}")
     
     audio = AudioSegment.from_file(io.BytesIO(response.audio_content), format='mp3')
     audio_length = len(audio) / 1000
 
     base64_audio = base64.b64encode(response.audio_content).decode('utf-8')
+    print(type(response))  # Check the type of response
+    print(response)
 
     return base64_audio, clean_text, audio_length
 
