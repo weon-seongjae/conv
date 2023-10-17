@@ -197,7 +197,7 @@ css_style = """
 </style>
 """
 
-def display_chat_history(chapter_data):
+def display_chat_history(chapter_data, auto_play_consent):
     final_html = ""
 
     if not hasattr(st.session_state, "selected_conversations"):
@@ -268,7 +268,7 @@ def display_chat_history(chapter_data):
 
             final_html += styled_message # Append each message to final_html
 
-            if i == 1:
+            if i == 1 and auto_play_consent:
                 response_base64_audio, _, response_audio_length = speak_and_mixed(message, is_question=False)
                 data_url = f"data:audio/mp3;base64,{response_base64_audio}"
                 audio_tag = f'<audio autoplay src="{data_url}" style="display: none;"></audio>'
@@ -293,6 +293,8 @@ def display_chat_history(chapter_data):
 
 def main():
     st.title("Daily English Conversations")
+
+    auto_play_consent = st.checkbox("영어회화 프로그램 진행에 동의합니다.", value=True)
 
     _, chapter_data, speakers_and_messages = handle_chapter_and_conversation_selection(knowledge_base)
 
