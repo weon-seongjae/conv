@@ -299,7 +299,7 @@ def main():
     _, chapter_data, speakers_and_messages = handle_chapter_and_conversation_selection(knowledge_base)
 
     if speakers_and_messages and chapter_data:
-        display_chat_history(chapter_data)
+        display_chat_history(chapter_data, auto_play_consent)
 
 def safe_delete(file):
     for _ in range(10):
