@@ -251,11 +251,11 @@ def display_chat_history(chapter_data, auto_play_consent):
             final_html += styled_message # Append each message to final_html
 
             if i == 1 and auto_play_consent:
-                    response_base64_audio, _, response_audio_length, answer_temp_file = speak_and_mixed(message, is_question=False)  # answer_temp_file를 반환값에서 얻음
+                    response_base64_audio, _, response_audio_length = speak_and_mixed(message, is_question=False)  # 기존의 반환값을 사용
 
-                    # Load the question and answer audio files
-                    question_audio = AudioSegment.from_file(io.BytesIO(question_temp_file.read()), format='mp3')
-                    answer_audio = AudioSegment.from_file(io.BytesIO(answer_temp_file.read()), format='mp3')
+                    # Load the question and answer audio files from base64 encoded strings
+                    question_audio = AudioSegment.from_file(io.BytesIO(base64.b64decode(question_base64_audio)), format='mp3')
+                    answer_audio = AudioSegment.from_file(io.BytesIO(base64.b64decode(response_base64_audio)), format='mp3')
 
                     # Create a silence segment of 1 second (1000 milliseconds)
                     silence = AudioSegment.silent(duration=1000)
@@ -263,13 +263,13 @@ def display_chat_history(chapter_data, auto_play_consent):
                     # Combine the question, silence, and answer audio files
                     combined_audio = question_audio + silence + answer_audio
 
-                    # Save the combined audio file
-                    with tempfile.SpooledTemporaryFile(max_size=2**24, mode='wb', suffix=".mp3") as temp_combined_file:
-                        combined_audio.export(temp_combined_file, format="mp3")
-                        temp_combined_file.seek(0)  # Reset file pointer to the beginning
-                        data_url = f"data:audio/mp3;base64,{base64.b64encode(temp_combined_file.read()).decode('utf-8')}"
-                        audio_tag = f'<audio autoplay src="{data_url}" style="display: none;"></audio>'
-                        st.markdown(audio_tag, unsafe_allow_html=True)
+                    # Save the combined audio file to a BytesIO object
+                    combined_buffer = io.BytesIO()
+                    combined_audio.export(combined_buffer, format="mp3")
+                    combined_buffer.seek(0)  # Reset buffer pointer to the beginning
+                    data_url = f"data:audio/mp3;base64,{base64.b64encode(combined_buffer.read()).decode('utf-8')}"
+                    audio_tag = f'<audio autoplay src="{data_url}" style="display: none;"></audio>'
+                    st.markdown(audio_tag, unsafe_allow_html=True)
 
             # if conv["is_new"]:
             #     st.session_state.chat_history[idx]["is_new"] = False
