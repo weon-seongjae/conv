@@ -251,11 +251,25 @@ def display_chat_history(chapter_data, auto_play_consent):
             final_html += styled_message # Append each message to final_html
 
             if i == 1 and auto_play_consent:
-                response_base64_audio, _, response_audio_length = speak_and_mixed(message, is_question=False)
-                data_url = f"data:audio/mp3;base64,{response_base64_audio}"
-                audio_tag = f'<audio autoplay src="{data_url}" style="display: none;"></audio>'
-                st.markdown(audio_tag, unsafe_allow_html=True)
-                time.sleep(response_audio_length)
+                    response_base64_audio, _, response_audio_length, answer_temp_file = speak_and_mixed(message, is_question=False)  # answer_temp_file를 반환값에서 얻음
+
+                    # Load the question and answer audio files
+                    question_audio = AudioSegment.from_file(io.BytesIO(question_temp_file.read()), format='mp3')
+                    answer_audio = AudioSegment.from_file(io.BytesIO(answer_temp_file.read()), format='mp3')
+
+                    # Create a silence segment of 1 second (1000 milliseconds)
+                    silence = AudioSegment.silent(duration=1000)
+
+                    # Combine the question, silence, and answer audio files
+                    combined_audio = question_audio + silence + answer_audio
+
+                    # Save the combined audio file
+                    with tempfile.SpooledTemporaryFile(max_size=2**24, mode='wb', suffix=".mp3") as temp_combined_file:
+                        combined_audio.export(temp_combined_file, format="mp3")
+                        temp_combined_file.seek(0)  # Reset file pointer to the beginning
+                        data_url = f"data:audio/mp3;base64,{base64.b64encode(temp_combined_file.read()).decode('utf-8')}"
+                        audio_tag = f'<audio autoplay src="{data_url}" style="display: none;"></audio>'
+                        st.markdown(audio_tag, unsafe_allow_html=True)
 
             # if conv["is_new"]:
             #     st.session_state.chat_history[idx]["is_new"] = False
