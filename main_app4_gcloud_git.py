@@ -87,7 +87,8 @@ def synthesize_speech(text, voice_type="male"):
     #     return temp_file.name
     temp_file = io.BytesIO(response.audio_content)
     audio = AudioSegment.from_file(temp_file, format='mp3')
-    return audio
+    temp_file.seek(0)
+    return response
 
 def speak_and_mixed(text, is_question=False):
     clean_text = re.sub('<[^<]+?>', '', text)
