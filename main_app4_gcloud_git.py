@@ -77,17 +77,12 @@ def synthesize_speech(text, voice_type="male"):
         audio_config=audio_config
     )
 
-    print(type(response))  # <class 'google.cloud.texttospeech_v1.types.SynthesizeSpeechResponse'>
-    print(response)
-
     # 임시 파일로 음성 데이터 저장
     # with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as temp_file:
     #     temp_file.write(response.audio_content)
     #     temp_files.append(temp_file.name)  # temp_files에 임시 파일 경로 추가
     #     return temp_file.name
     temp_file = io.BytesIO(response.audio_content)
-    audio = AudioSegment.from_file(temp_file, format='mp3')
-    temp_file.seek(0)
     return response
 
 def speak_and_mixed(text, is_question=False):
@@ -96,9 +91,6 @@ def speak_and_mixed(text, is_question=False):
     if isinstance(response, AudioSegment):
         audio = response
         audio_length = len(audio) / 1000
-    else:
-        print(f"Unexpected type: {type(response)}")
-        return None, clean_text, 0
 
     # AudioSegment 객체를 BytesIO 객체로 변환합니다.
     audio_buffer = io.BytesIO()
@@ -277,18 +269,12 @@ def display_chat_history(chapter_data, auto_play_consent):
                 st.markdown(audio_tag, unsafe_allow_html=True)
                 time.sleep(response_audio_length)
 
-            if conv["is_new"]:
-                st.session_state.chat_history[idx]["is_new"] = False
+            # if conv["is_new"]:
+            #     st.session_state.chat_history[idx]["is_new"] = False
 
         # Once a conversation has been displayed, it's not new anymore
         if conv["is_new"]:
             st.session_state.chat_history[idx]["is_new"] = False
-
-    # 임시 파일 삭제
-    for file_path in temp_files:
-        if os.path.exists(file_path):
-            os.remove(file_path)
-    temp_files.clear()
 
     st.markdown(final_html, unsafe_allow_html=True)
     st.markdown(css_style, unsafe_allow_html=True)
@@ -296,7 +282,7 @@ def display_chat_history(chapter_data, auto_play_consent):
 def main():
     st.title("Daily English Conversations")
 
-    auto_play_consent = st.checkbox("영어회화 프로그램 진행에 동의합니다.", value=True)
+    auto_play_consent = st.checkbox("영어회화 프로그램 진행에 동의합니다.")
 
     _, chapter_data, speakers_and_messages = handle_chapter_and_conversation_selection(knowledge_base)
 
