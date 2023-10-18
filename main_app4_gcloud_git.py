@@ -78,12 +78,12 @@ def synthesize_speech(text, voice_type="male"):
 
     temp_file = io.BytesIO(response.audio_content)
     audio = AudioSegment.from_file(temp_file, format='mp3')
-    return audio  # AudioSegment 객체 반환
+    return response.audio_content  # AudioSegment 객체 반환
 
 def speak_and_mixed(text, is_question=False):
     clean_text = re.sub('<[^<]+?>', '', text)
-    response = synthesize_speech(clean_text, "male" if is_question else "female")
-    audio_content = response.audio_content  # audio_content 속성을 사용합니다.
+
+    audio_content = synthesize_speech(clean_text, "male" if is_question else "female")  # audio_content 속성을 사용합니다.
     audio_length = len(audio_content) / (16000 * 2)  # 16kHz, 16-bit mono PCM 음성 데이터를 가정합니다.
 
     base64_audio = base64.b64encode(audio_content).decode('utf-8')
