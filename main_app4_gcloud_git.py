@@ -239,7 +239,7 @@ def display_chat_history(chapter_data, auto_play_consent):
 
             audio_tag = f'<audio autoplay src="{data_url}" style="display: none;"></audio>'
             st.markdown(audio_tag, unsafe_allow_html=True)
-            time.sleep(question_audio_length)
+            # time.sleep(question_audio_length)
 
         for i, msg in enumerate(conv["conversation"]):
             messages = msg['message']
@@ -302,7 +302,7 @@ def safe_delete(file):
             break
         except Exception as e:
             print(f"Failed to delete {file}: {e}")
-            time.sleep(0.5)
+            # time.sleep(0.5)
 
 if __name__ == "__main__":
     main()
