@@ -15,6 +15,8 @@ import json
 import base64
 import io
 import logging
+import ffmpeg
+import numpy as np
 
 logging.basicConfig(level=logging.INFO, filename='app.log', filemode='w')
 
@@ -77,19 +79,35 @@ def synthesize_speech(text, voice_type="male"):
         audio_config=audio_config
     )
 
-    temp_file = io.BytesIO(response.audio_content)
-    audio = AudioSegment.from_file(temp_file, format='mp3')
+    audio_io = io.BytesIO(response.audio_content)
+    audio = AudioSegment.from_file(audio_io, format='mp3')
     return audio  # AudioSegment 객체 반환
 
 def speak_and_mixed(text, is_question=False):
     clean_text = re.sub('<[^<]+?>', '', text)
-    response = synthesize_speech(clean_text, "male" if is_question else "female")
-    audio_content = response.audio_content  # audio_content 속성을 사용합니다.
-    audio_length = len(audio_content) / (16000 * 2)  # 16kHz, 16-bit mono PCM 음성 데이터를 가정합니다.
+    audio = synthesize_speech(clean_text, "male" if is_question else "female")
+    audio_length = len(audio) / 1000  # AudioSegment 객체의 길이는 밀리초 단위이므로 1000으로 나눕니다.
 
-    base64_audio = base64.b64encode(audio_content).decode('utf-8')
+    # AudioSegment 객체를 BytesIO 객체로 변환합니다.
+    audio_buffer = io.BytesIO()
+    audio.export(audio_buffer, format='mp3')
+    audio_bytes = audio_buffer.getvalue()
+
+    # audio_bytes를 base64로 인코딩합니다.
+    base64_audio = base64.b64encode(audio_bytes).decode('utf-8')
 
     return base64_audio, clean_text, audio_length
+
+def mp3_to_numpy(audio_content):
+    input_audio = io.BytesIO(audio_content)
+    out, _ = (
+        ffmpeg
+        .input('pipe:0')
+        .output('pipe:1', format='f32le', acodec='pcm_f32le', ac=1, ar='16k')
+        .run(input=input_audio, pipe_stdout=True, pipe_stderr=True)
+    )
+    audio_array = np.frombuffer(out, np.float32)
+    return audio_array
 
 
 def prepare_speakers_and_messages(selected_chapter, chapter_conversations, modifications_dict):
