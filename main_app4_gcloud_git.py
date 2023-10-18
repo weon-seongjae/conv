@@ -231,6 +231,8 @@ def display_chat_history(chapter_data, auto_play_consent):
         question_message = question_messages[0]
         response_message = random.choice(response_messages)
 
+        print(f"Response message: {response_message}")
+
         # 새 대화 삽입
         st.session_state.chat_history.insert(0, {
             "conversation": [{"speaker": "user" if selected_conversation[0]['speaker'] == "bot" else "bot", "message": [question_message]},
