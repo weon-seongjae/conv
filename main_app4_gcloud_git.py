@@ -51,9 +51,7 @@ def load_conversations_and_modifications():
 
 knowledge_base, modifications_dict = load_conversations_and_modifications()
 
-temp_files = []
-
-def synthesize_speech(text, filename, voice_type="male"):
+def synthesize_speech(text, voice_type="male"):
     client = texttospeech.TextToSpeechClient(credentials=credentials)
 
     input_text = texttospeech.SynthesisInput(text=text)
@@ -87,28 +85,27 @@ def synthesize_speech(text, filename, voice_type="male"):
     #     temp_file.write(response.audio_content)
     #     temp_files.append(temp_file.name)  # temp_files에 임시 파일 경로 추가
     #     return temp_file.name
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as temp_file:
-        temp_file.write(response.audio_content)
-        temp_files.append(temp_file.name)  # temp_files에 임시 파일 경로 추가
-        logging.info(f"MP3 file created: {temp_file.name}")
-        return temp_file.name
+    temp_file = io.BytesIO(response.audio_content)
+    audio = AudioSegment.from_file(temp_file, format='mp3')
+    return audio
 
 def speak_and_mixed(text, is_question=False):
     clean_text = re.sub('<[^<]+?>', '', text)
     response = synthesize_speech(clean_text, "male" if is_question else "female")
-    if isinstance(response, texttospeech.SynthesizeSpeechResponse):
-        audio_content = response.audio_content  # audio_content 변수 정의
+    if isinstance(response, AudioSegment):
+        audio = response
+        audio_length = len(audio) / 1000
     else:
         print(f"Unexpected type: {type(response)}")
-        return None, clean_text, 0  # 오류 시 None 반환
-    
-    decoded_audio_content = base64.b64decode(audio_content)  # 이 줄은 필요하지 않을 수 있습니다.
-    audio = AudioSegment.from_file(io.BytesIO(audio_content), format='mp3')  # audio_content 변수 사용
-    audio_length = len(audio) / 1000
+        return None, clean_text, 0
 
-    base64_audio = base64.b64encode(audio_content).decode('utf-8')
-    print(type(response))  # Check the type of response
-    print(response)
+    # AudioSegment 객체를 BytesIO 객체로 변환합니다.
+    audio_buffer = io.BytesIO()
+    audio.export(audio_buffer, format='mp3')
+    audio_bytes = audio_buffer.getvalue()
+
+    # audio_bytes를 base64로 인코딩합니다.
+    base64_audio = base64.b64encode(audio_bytes).decode('utf-8')
 
     return base64_audio, clean_text, audio_length
 
