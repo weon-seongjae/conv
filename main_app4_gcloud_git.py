@@ -229,8 +229,11 @@ def display_chat_history(chapter_data, auto_play_consent):
     for idx, conv in enumerate(st.session_state.chat_history):
         question_message = conv["conversation"][0]['message'][0]
 
-        if conv["is_new"]:
+        if conv["is_new"] and "question_base64_audio" not in conv:
             question_base64_audio, _, question_audio_length = speak_and_mixed(question_message, is_question=True)
+            conv["question_base64_audio"] = question_base64_audio  # Save the audio to the conversation state
+        else:
+            question_base64_audio = conv["question_base64_audio"]
 
             data_url = f"data:audio/mp3;base64,{question_base64_audio}"
 
