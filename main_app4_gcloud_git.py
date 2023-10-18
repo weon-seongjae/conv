@@ -83,15 +83,18 @@ def synthesize_speech(text, voice_type="male"):
     #     temp_files.append(temp_file.name)  # temp_files에 임시 파일 경로 추가
     #     return temp_file.name
     temp_file = io.BytesIO(response.audio_content)
-    return response
+    audio = AudioSegment.from_file(temp_file, format='mp3')
+    return audio  # AudioSegment 객체 반환
 
 def speak_and_mixed(text, is_question=False):
     clean_text = re.sub('<[^<]+?>', '', text)
     response = synthesize_speech(clean_text, "male" if is_question else "female")
-    audio = None
     if isinstance(response, AudioSegment):
         audio = response
         audio_length = len(audio) / 1000
+    else:
+        print(f"Unexpected type: {type(response)}")
+        return None, clean_text, 0
 
     # AudioSegment 객체를 BytesIO 객체로 변환합니다.
     audio_buffer = io.BytesIO()
