@@ -77,11 +77,6 @@ def synthesize_speech(text, voice_type="male"):
         audio_config=audio_config
     )
 
-    # 임시 파일로 음성 데이터 저장
-    # with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as temp_file:
-    #     temp_file.write(response.audio_content)
-    #     temp_files.append(temp_file.name)  # temp_files에 임시 파일 경로 추가
-    #     return temp_file.name
     temp_file = io.BytesIO(response.audio_content)
     audio = AudioSegment.from_file(temp_file, format='mp3')
     return audio  # AudioSegment 객체 반환
@@ -89,20 +84,10 @@ def synthesize_speech(text, voice_type="male"):
 def speak_and_mixed(text, is_question=False):
     clean_text = re.sub('<[^<]+?>', '', text)
     response = synthesize_speech(clean_text, "male" if is_question else "female")
-    if isinstance(response, AudioSegment):
-        audio = response
-        audio_length = len(audio) / 1000
-    else:
-        print(f"Unexpected type: {type(response)}")
-        return None, clean_text, 0
+    audio_content = response.audio_content  # audio_content 속성을 사용합니다.
+    audio_length = len(audio_content) / (16000 * 2)  # 16kHz, 16-bit mono PCM 음성 데이터를 가정합니다.
 
-    # AudioSegment 객체를 BytesIO 객체로 변환합니다.
-    audio_buffer = io.BytesIO()
-    audio.export(audio_buffer, format='mp3')
-    audio_bytes = audio_buffer.getvalue()
-
-    # audio_bytes를 base64로 인코딩합니다.
-    base64_audio = base64.b64encode(audio_bytes).decode('utf-8')
+    base64_audio = base64.b64encode(audio_content).decode('utf-8')
 
     return base64_audio, clean_text, audio_length
 
