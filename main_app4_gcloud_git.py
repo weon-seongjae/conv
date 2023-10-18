@@ -79,20 +79,17 @@ def synthesize_speech(text, voice_type="male"):
         audio_config=audio_config
     )
 
-    audio_bytes = io.BytesIO(response.audio_content)
-    audio_np, sr = librosa.load(audio_bytes, sr=None)
-
-    return audio_np, sr
+    temp_file = io.BytesIO(response.audio_content)
+    audio = AudioSegment.from_file(temp_file, format='mp3')
+    return audio  # AudioSegment 객체 반환
 
 def speak_and_mixed(text, is_question=False):
     clean_text = re.sub('<[^<]+?>', '', text)
-    audio_np, sr = synthesize_speech(clean_text, "male" if is_question else "female")
+    response = synthesize_speech(clean_text, "male" if is_question else "female")
+    audio_content = response.audio_content  # audio_content 속성을 사용합니다.
+    audio_length = len(audio_content) / (16000 * 2)  # 16kHz, 16-bit mono PCM 음성 데이터를 가정합니다.
 
-    audio_length = len(audio_np) / sr
-
-    # If needed, convert numpy array to bytes and then to base64
-    audio_bytes = sf.write(io.BytesIO(), audio_np, sr, format='wav', subtype='PCM_16')
-    base64_audio = base64.b64encode(audio_bytes.getvalue()).decode('utf-8')
+    base64_audio = base64.b64encode(audio_content).decode('utf-8')
 
     return base64_audio, clean_text, audio_length
 
