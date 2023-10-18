@@ -89,6 +89,7 @@ def synthesize_speech(text, filename, voice_type="male"):
     with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as temp_file:
         temp_file.write(response.audio_content)
         temp_files.append(temp_file.name)  # temp_files에 임시 파일 경로 추가
+        logging.info(f"MP3 file created: {temp_file.name}")
         return temp_file.name
 
 def speak_and_mixed(text, is_question=False):
