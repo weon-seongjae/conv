@@ -16,6 +16,7 @@ import base64
 import io
 import logging
 
+logging.basicConfig(level=logging.INFO, filename='app.log', filemode='w')
 
 # 환경 변수에서 인증 정보를 가져옵니다.
 credentials_str = os.environ['GCP_CREDENTIALS']
