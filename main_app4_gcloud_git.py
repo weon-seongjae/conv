@@ -88,6 +88,7 @@ def synthesize_speech(text, voice_type="male"):
 def speak_and_mixed(text, is_question=False):
     clean_text = re.sub('<[^<]+?>', '', text)
     response = synthesize_speech(clean_text, "male" if is_question else "female")
+    audio = None
     if isinstance(response, AudioSegment):
         audio = response
         audio_length = len(audio) / 1000
