@@ -1,5 +1,4 @@
 streamlit
-uuid
 pydub
 requests
 google-cloud-texttospeech
