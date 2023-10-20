@@ -13,7 +13,7 @@ import json
 import base64
 import io
 import logging
-
+import uuid
 
 logging.basicConfig(level=logging.INFO, filename='app.log', filemode='w')
 
@@ -50,43 +50,37 @@ def load_conversations_and_modifications():
 
 knowledge_base, modifications_dict = load_conversations_and_modifications()
 
-def synthesize_speech(text, voice_type="male"):
+def synthesize_speech(text, voice_name, male_voices_mapping, female_voices_mapping):
     client = texttospeech.TextToSpeechClient(credentials=credentials)
-
     input_text = texttospeech.SynthesisInput(text=text)
-
-    if voice_type == "male":
-        voice_params = texttospeech.VoiceSelectionParams(
-            language_code="en-US",
-            name="en-US-Neural2-D",
-            ssml_gender=texttospeech.SsmlVoiceGender.MALE
-        )
+    
+    # 음성 이름을 기반으로 성별 결정
+    if voice_name in male_voices_mapping.values():
+        ssml_gender = texttospeech.SsmlVoiceGender.MALE
+    elif voice_name in female_voices_mapping.values():
+        ssml_gender = texttospeech.SsmlVoiceGender.FEMALE
     else:
-        voice_params = texttospeech.VoiceSelectionParams(
-            language_code="en-US",
-            name="en-US-Neural2-C",
-            ssml_gender=texttospeech.SsmlVoiceGender.FEMALE
-        )
+        # 이 경우에는 어떤 작업을 할지 정해야 합니다. 여기에서는 예외를 발생시킵니다.
+        raise ValueError(f"Unsupported voice_name: {voice_name}")
 
-    audio_config = texttospeech.AudioConfig(audio_encoding=texttospeech.AudioEncoding.MP3)
-
-    response = client.synthesize_speech(
-        input=input_text,
-        voice=voice_params,
-        audio_config=audio_config
+    voice_params = texttospeech.VoiceSelectionParams(
+        language_code="en-US",
+        name=voice_name,
+        ssml_gender=ssml_gender
     )
 
-    temp_file = io.BytesIO(response.audio_content)
-    audio = AudioSegment.from_file(temp_file, format='mp3')
-    return response.audio_content  # AudioSegment 객체 반환
+    audio_config = texttospeech.AudioConfig(audio_encoding=texttospeech.AudioEncoding.MP3)
+    response = client.synthesize_speech(input=input_text, voice=voice_params, audio_config=audio_config)
+    return response
 
-def speak_and_mixed(text, is_question=False):
+
+def speak_and_mixed(text, voice_name, male_voices_mapping, female_voices_mapping, is_question=False):
     clean_text = re.sub('<[^<]+?>', '', text)
+    response = synthesize_speech(clean_text, voice_name, male_voices_mapping, female_voices_mapping)
+    audio = AudioSegment.from_file(io.BytesIO(response.audio_content), format='mp3')
+    audio_length = len(audio) / (16000 * 2)  # 16kHz, 16-bit mono PCM 음성 데이터를 가정합니다.
 
-    audio_content = synthesize_speech(clean_text, "male" if is_question else "female")  # audio_content 속성을 사용합니다.
-    audio_length = len(audio_content) / (16000 * 2)  # 16kHz, 16-bit mono PCM 음성 데이터를 가정합니다.
-
-    base64_audio = base64.b64encode(audio_content).decode('utf-8')
+    base64_audio = base64.b64encode(response.audio_content).decode('utf-8')
 
     return base64_audio, clean_text, audio_length
 
@@ -162,38 +156,22 @@ def handle_chapter_and_conversation_selection(knowledge_base):
         return chapter_name, chapter_data, speakers_and_messages
     return None, None, None
 
-css_style = """
-<style>
-    .styled-message {
-        font-size: 30px;
-        background-color: #f0f0f0;
-        padding: 5px;
-        margin: 5px 0;
-        line-height: 5; /* Adjust the line spacing */
-    }
-    .question-dialogue-gap {
-        height: 20px;
-    }
-</style>
-"""
 
-def display_chat_history(chapter_data, auto_play_consent):
+def display_chat_history(chapter_data, auto_play_consent, male_voices_mapping, female_voices_mapping, question_voice_name, answer_voice_name, css_style=None):
+
     final_html = ""
 
     if not hasattr(st.session_state, "selected_conversations"):
         st.session_state.selected_conversations = []
 
     selected_message = st.session_state.selected_message
-    print(f"Selected message: {selected_message}")
     selected_conversation = None
 
-    selected_message = st.session_state.selected_message
-
     conversations = chapter_data["conversations"]
-    for idx, conv in enumerate(conversations[:-1]): # 마지막 대화를 제외하고 반복
+    for idx, conv in enumerate(conversations[:-1]):  # 마지막 대화를 제외하고 반복
         for message_idx, msg in enumerate(conv["message"]):
             if msg == selected_message:
-                selected_conversation = [conversations[idx], conversations[idx + 1]] # 선택된 대화와 그 다음 대화를 할당
+                selected_conversation = [conversations[idx], conversations[idx + 1]]  # 선택된 대화와 그 다음 대화를 할당
                 break
         if selected_conversation:
             break
@@ -207,79 +185,43 @@ def display_chat_history(chapter_data, auto_play_consent):
         response_messages = selected_conversation[1]['message']
 
         question_message = question_messages[0]
+        question_base64_audio, _, question_audio_length = speak_and_mixed(question_message, question_voice_name, male_voices_mapping, female_voices_mapping)
+        
         response_message = random.choice(response_messages)
+        response_base64_audio, _, response_audio_length = speak_and_mixed(response_message, answer_voice_name, male_voices_mapping, female_voices_mapping)
 
-        print(f"Response message: {response_message}")
-
-        # 새 대화 삽입
-        st.session_state.chat_history.insert(0, {
-            "conversation": [{"speaker": "user" if selected_conversation[0]['speaker'] == "bot" else "bot", "message": [question_message]},
-                        {"speaker": "bot" if selected_conversation[0]['speaker'] == "bot" else "user", "message": [response_message]}],
-            "is_new": True})
-
-        # 선택된 대화 기록
-        st.session_state.selected_conversations.append(selected_conversation)
-    else:
-        st.write("Error: Selected message and the corresponding answer not found.")
-        return
-
-    # for 루프 시작 전에 변수를 초기화
-    audio_controls = ""
-
-    for idx, conv in enumerate(st.session_state.chat_history):
-        question_message = conv["conversation"][0]['message'][0]
-
-        if conv["is_new"] and "question_base64_audio" not in conv:
-            question_base64_audio, _, question_audio_length = speak_and_mixed(question_message, is_question=True)
-            conv["question_base64_audio"] = question_base64_audio  # Save the audio to the conversation state
+        # 남자 성우의 경우 아이콘 지정
+        if question_voice_name in male_voices_mapping.values():
+            question_icon = "👨‍🦰"
         else:
-            question_base64_audio = conv["question_base64_audio"]
+            question_icon = "👩‍🦰"
 
-            data_url = f"data:audio/mp3;base64,{question_base64_audio}"
+        # 남자 성우의 경우 아이콘 지정
+        if answer_voice_name in male_voices_mapping.values():
+            answer_icon = "👨"
+        else:
+            answer_icon = "👩"
 
+        if auto_play_consent:
+            # pydub을 사용하여 질문과 답변 음성을 합칩니다
+            question_audio = AudioSegment.from_file(io.BytesIO(base64.b64decode(question_base64_audio)), format='mp3')
+            answer_audio = AudioSegment.from_file(io.BytesIO(base64.b64decode(response_base64_audio)), format='mp3')
+            silence = AudioSegment.silent(duration=1000)
+            combined_audio = question_audio + silence + answer_audio
+
+            combined_buffer = io.BytesIO()
+            combined_audio.export(combined_buffer, format="mp3")
+            data_url = f"data:audio/mp3;base64,{base64.b64encode(combined_buffer.getvalue()).decode('utf-8')}"
             audio_tag = f'<audio autoplay src="{data_url}" style="display: none;"></audio>'
             st.markdown(audio_tag, unsafe_allow_html=True)
-            # time.sleep(question_audio_length)
 
-        for i, msg in enumerate(conv["conversation"]):
-            messages = msg['message']
-            message = messages[0]
-            icon = "👩‍🦰" if msg['speaker'] == 'user' else "👩"
-            message = message.replace('\n', ' \n')
-            styled_message = f'<div class="styled-message">{icon} {message}</div>'
+            # 질문 음성과 답변 음성이 모두 끝나기 전에 질문 텍스트와 답변 텍스트 동시 출력
+            st.markdown(f'<div class="question-text">{question_icon} {question_message}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="answer-text">{answer_icon} {response_message}</div>', unsafe_allow_html=True)
 
-            if i == 0 and idx > 0:
-                styled_message += '<div class="question-dialogue-gap"></div>'
-
-            final_html += styled_message # Append each message to final_html
-
-            if i == 1 and auto_play_consent:
-                    response_base64_audio, _, response_audio_length = speak_and_mixed(message, is_question=False)  # 기존의 반환값을 사용
-
-                    # Load the question and answer audio files from base64 encoded strings
-                    question_audio = AudioSegment.from_file(io.BytesIO(base64.b64decode(question_base64_audio)), format='mp3')
-                    answer_audio = AudioSegment.from_file(io.BytesIO(base64.b64decode(response_base64_audio)), format='mp3')
-
-                    # Create a silence segment of 1 second (1000 milliseconds)
-                    silence = AudioSegment.silent(duration=1000)
-
-                    # Combine the question, silence, and answer audio files
-                    combined_audio = question_audio + silence + answer_audio
-
-                    # Save the combined audio file to a BytesIO object
-                    combined_buffer = io.BytesIO()
-                    combined_audio.export(combined_buffer, format="mp3")
-                    combined_buffer.seek(0)  # Reset buffer pointer to the beginning
-                    data_url = f"data:audio/mp3;base64,{base64.b64encode(combined_buffer.read()).decode('utf-8')}"
-                    audio_tag = f'<audio autoplay src="{data_url}" style="display: none;"></audio>'
-                    st.markdown(audio_tag, unsafe_allow_html=True)
-
-            # if conv["is_new"]:
-            #     st.session_state.chat_history[idx]["is_new"] = False
-
-        # Once a conversation has been displayed, it's not new anymore
-        if conv["is_new"]:
-            st.session_state.chat_history[idx]["is_new"] = False
+        else:
+            st.write("Error: Selected message and the corresponding answer not found.")
+            return
 
     st.markdown(final_html, unsafe_allow_html=True)
     st.markdown(css_style, unsafe_allow_html=True)
@@ -287,12 +229,73 @@ def display_chat_history(chapter_data, auto_play_consent):
 def main():
     st.title("Daily English Conversations")
 
+    css_style = """
+    <style>
+        /* 질문 텍스트 스타일 */
+        .question-text {
+            font-size: 35px;
+            padding: 10px 15px;
+            border-radius: 10px;
+            margin: 5px 0;
+            box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 답변 텍스트 스타일 */
+        .answer-text {
+            font-size: 35px;
+            padding: 10px 15px;
+            border-radius: 10px;
+            margin: 5px 0;
+            box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+    """
+    st.markdown(css_style, unsafe_allow_html=True)
+
+    male_voices_mapping = {
+        "Tom(남성)": "en-US-Polyglot-1",
+        "Bob(남성)": "en-US-Standard-A",
+        "Bill(남성)": "en-US-Standard-B",
+        "Jim(남성)": "en-US-Standard-D",
+        "John(남성)": "en-US-Standard-I",
+        "Jack(남성)": "en-US-Standard-J"
+    }
+
+    female_voices_mapping = {
+        "Beth(여성)": "en-US-Standard-C",
+        "Mia(여성)": "en-US-Standard-E",
+        "Ivy(여성)": "en-US-Standard-F",
+        "Emma(여성)": "en-US-Standard-G",
+        "Alice(여성)": "en-US-Standard-H"
+    }
+
+    st.sidebar.markdown("<strong>질문 성우 선택</strong>", unsafe_allow_html=True)
+    voices_list = list(male_voices_mapping.keys()) + list(female_voices_mapping.keys())
+    selected_question_voice = st.sidebar.radio("성우 선택", voices_list)
+
+    st.sidebar.markdown("<strong>답변 성우 선택</strong>", unsafe_allow_html=True)
+    selected_answer_voice = st.sidebar.radio("성우 선택", voices_list, key="answer_voice")
+
     auto_play_consent = st.checkbox("영어회화 프로그램 진행에 동의합니다.")
+    
+    if not auto_play_consent:
+        st.warning("프로그램을 진행하려면 동의해야 합니다.")
+        return
 
     _, chapter_data, speakers_and_messages = handle_chapter_and_conversation_selection(knowledge_base)
 
+    if selected_question_voice in male_voices_mapping:
+        question_voice_name = male_voices_mapping[selected_question_voice]
+    else:
+        question_voice_name = female_voices_mapping[selected_question_voice]
+
+    if selected_answer_voice in male_voices_mapping:
+        answer_voice_name = male_voices_mapping[selected_answer_voice]
+    else:
+        answer_voice_name = female_voices_mapping[selected_answer_voice]
+
     if speakers_and_messages and chapter_data:
-        display_chat_history(chapter_data, auto_play_consent)
+        display_chat_history(chapter_data, auto_play_consent, male_voices_mapping, female_voices_mapping, question_voice_name, answer_voice_name, css_style)
 
 def safe_delete(file):
     for _ in range(10):
@@ -301,7 +304,7 @@ def safe_delete(file):
             print(f"Successfully deleted {file}")
             break
         except Exception as e:
-            print(f"Failed to delete {file}: {e}")
+            print(f"Failed to delete {file}: {e}") 
             # time.sleep(0.5)
 
 if __name__ == "__main__":
