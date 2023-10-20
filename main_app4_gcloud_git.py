@@ -206,8 +206,15 @@ def display_chat_history(chapter_data, auto_play_consent, male_voices_mapping, f
             # pydub을 사용하여 질문과 답변 음성을 합칩니다
             question_audio = AudioSegment.from_file(io.BytesIO(base64.b64decode(question_base64_audio)), format='mp3')
             answer_audio = AudioSegment.from_file(io.BytesIO(base64.b64decode(response_base64_audio)), format='mp3')
-            silence = AudioSegment.silent(duration=1000)
-            combined_audio = question_audio + silence + answer_audio
+            silence_between = AudioSegment.silent(duration=1000)
+
+            # 음성의 총 길이 계산
+            total_audio_length = question_audio_length + response_audio_length
+            # 음성이 끝난 후 출력될 텍스트를 위한 silence 추가
+            silence_after = AudioSegment.silent(duration=int(total_audio_length * 1000))
+
+            # 실제로 재생될 음성을 합칩니다
+            combined_audio = question_audio + silence_between + answer_audio + silence_after
 
             combined_buffer = io.BytesIO()
             combined_audio.export(combined_buffer, format="mp3")
